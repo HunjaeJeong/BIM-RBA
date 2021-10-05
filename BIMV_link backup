@@ -1,0 +1,218 @@
+using System;
+using System.Collections.Generic;
+using Autodesk.Revit.UI;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit;
+using System.Reflection;
+using System.Windows.Media.Imaging;
+
+namespace HelloWorld
+{
+    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+    public class Class1 : IExternalApplication
+    {
+
+        public Result OnStartup(UIControlledApplication application)
+        {
+            // Add a new ribbon panel
+            RibbonPanel ribbonPanel = application.CreateRibbonPanel("BIMV");
+
+            // Create a push button to trigger a command add it to the ribbon panel.
+            string thisAssemblyPath = Assembly.GetExecutingAssembly().Location;
+            PushButtonData buttonData = new PushButtonData("cmdHelloWorld",
+               "MaterialManage", thisAssemblyPath, "HelloWorld.HelloWorld");
+
+            PushButton pushButton = ribbonPanel.AddItem(buttonData) as PushButton;
+
+            // Optionally, other properties may be assigned to the button
+            // a) tool-tip
+            pushButton.ToolTip = "Setting Materials.";
+
+            // b) large bitmap
+            Uri uriImage = new Uri(@"D:\10. 프로그램개발(BIM-V)\REVIT\dog.png");
+            BitmapImage largeImage = new BitmapImage(uriImage);
+            pushButton.LargeImage = largeImage;
+
+            return Result.Succeeded;
+        }
+
+      public Result OnShutdown(UIControlledApplication application)
+      {
+         // nothing to clean up in this simple case
+         return Result.Succeeded;
+      }
+
+
+    }
+
+    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+    public class HelloWorld : IExternalCommand
+    {
+        // The main Execute method (inherited from IExternalCommand) must be public
+        public Autodesk.Revit.UI.Result Execute(ExternalCommandData revit,
+       ref string message, ElementSet elements)
+        {
+            Application app = revit.Application.Application;
+            Document doc = revit.Application.ActiveUIDocument.Document;
+
+
+            FilteredElementCollector collector = new FilteredElementCollector(doc);
+            ICollection<Element> collection = collector.OfClass(typeof(Material)).ToElements();
+
+            List<string> list = new List<string>();
+
+            foreach (Material d in collection)
+            {
+                list.Add(d.Name);
+                
+
+            }
+            TaskDialog.Show(doc.Title, string.Join(", ", list));
+            //ICollection<Element> collection = collector.OfCategory(BuiltInCategory.OST_RvtLinks).OfClass(typeof(Material)).ToElements();
+
+
+
+            /*string what;
+            int i = 0;
+
+            
+
+            foreach (Document d in app.Documents)
+            {
+                *//*using (Transaction transaction = new Transaction(d))
+                {
+
+                    transaction.Start("Start");
+                    transaction.Commit();
+
+                }*//*
+
+                if (doc.Title != d.Title)
+                    {
+
+                        FilteredElementCollector materialLinked = new FilteredElementCollector(d).OfClass(typeof(Material));
+
+                        foreach (Material materialOrigin in collection)
+                        {
+
+                            if (Material.IsNameUnique(d, materialOrigin.Name))
+                            {
+                                //materialOrigin.Duplicate(materialOrigin.Name);
+
+                                list.Add("0");
+                            }
+                            else
+                            {
+                                list.Add("1");
+                            }
+                            
+                        }
+
+
+                        *//*list.Clear();
+                        
+                        foreach (Material e in materialLinked)
+                        {
+                            list.Add(e.Name.ToString());
+
+                        }*//*
+
+                        TaskDialog.Show(d.Title, string.Join(", ", list));
+
+                    }
+
+                    
+                
+
+                
+            }*/
+
+
+            //Parameter description;
+            //Parameter mark;
+            /*Parameter comments;
+
+            
+
+            using (Transaction transaction = new Transaction(doc))
+            {
+                transaction.Start("Start");
+
+                foreach (RevitLinkInstance element in collection)
+                {
+
+                    //RevitLinkType linkType = element as RevitLinkType;
+
+                    
+
+
+
+                    //description = element.get_Parameter(BuiltInParameter.ALL_MODEL_DESCRIPTION);
+                    //mark = element.get_Parameter(BuiltInParameter.ALL_MODEL_MARK);
+                    comments = element.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS);
+                    //var Comments = mark;
+                    //TaskDialog.Show(element.Name.ToString(), enumerator.AsString());
+
+
+                    element.Name = comments.AsString();
+
+                    //comments.Set(mark.AsString()+"*"+description.AsString());
+
+                    TaskDialog.Show("Revit", string.Join(", ", list));
+                    list.Clear();
+                    //list.Add(linkType.Name.ToString());
+                    
+
+                    //ICollection<Element> linkInstance = collector.OfCategory(BuiltInCategory.OST_RvtLinks).ToElements();
+                    
+
+
+                    
+                    *//*foreach (RevitLinkInstance rvtlinkInstance in linkInstance)
+                    {
+                        Document docLink = rvtlinkInstance.GetLinkDocument();
+                        FilteredElementCollector collectorLink = new FilteredElementCollector(docLink);
+                        IList<Element> linkedMaterial = collectorLink.OfClass(typeof(Material)).ToElements();
+
+                        TaskDialog.Show("Revit", rvtlinkInstance.ToString());
+
+
+                        foreach (Element materialLinked in linkedMaterial)
+                        {
+                            Material materialLink = materialLinked as Material;
+
+                            TaskDialog.Show("Revit", materialLink.Name.ToString());
+                            //list.Add(materialLink.Name.ToString());
+
+                        }
+                    }*//*
+
+
+
+                   
+
+                }
+
+
+
+                transaction.Commit();
+
+            }*/
+            /***
+            foreach (Element element in collection)
+            {
+                list.Add(element.Name.ToString());
+
+
+            }
+            ***/
+
+
+            //TaskDialog.Show("Revit", collection.Count.ToString());
+            return Autodesk.Revit.UI.Result.Succeeded;
+        }
+    }
+
+
+}
