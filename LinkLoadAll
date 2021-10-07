@@ -1,0 +1,105 @@
+using System;
+using System.Collections.Generic;
+using Autodesk.Revit.UI;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit;
+using System.Reflection;
+using System.Windows.Media.Imaging;
+
+namespace HelloWorld
+{
+    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+    public class LinkLoadAll : IExternalApplication
+    {
+
+        public Result OnStartup(UIControlledApplication application)
+        {
+            // Add a new ribbon panel
+            RibbonPanel ribbonPanel = application.CreateRibbonPanel("BIMV");
+
+            // Create a push button to trigger a command add it to the ribbon panel.
+            string thisAssemblyPath = Assembly.GetExecutingAssembly().Location;
+            PushButtonData buttonData = new PushButtonData("cmdHelloWorld",
+               "MaterialManage", thisAssemblyPath, "HelloWorld.HelloWorld2");
+
+            PushButton pushButton = ribbonPanel.AddItem(buttonData) as PushButton;
+
+            // Optionally, other properties may be assigned to the button
+            // a) tool-tip
+            pushButton.ToolTip = "Setting Materials.";
+
+            // b) large bitmap
+            Uri uriImage = new Uri(@"D:\10. 프로그램개발(BIM-V)\REVIT\dog.png");
+            BitmapImage largeImage = new BitmapImage(uriImage);
+            pushButton.LargeImage = largeImage;
+
+            return Result.Succeeded;
+        }
+
+        public Result OnShutdown(UIControlledApplication application)
+        {
+            // nothing to clean up in this simple case
+            return Result.Succeeded;
+        }
+
+
+    }
+
+    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+    public class HelloWorld2 : IExternalCommand
+    {
+        // The main Execute method (inherited from IExternalCommand) must be public
+        public Autodesk.Revit.UI.Result Execute(ExternalCommandData revit,
+       ref string message, ElementSet elements)
+        {
+            Application app = revit.Application.Application;
+            Document doc = revit.Application.ActiveUIDocument.Document;
+
+
+            FilteredElementCollector collector = new FilteredElementCollector(doc);
+
+            List<string> list = new List<string>();
+
+
+
+            //Parameter description;
+            //Parameter mark;
+
+
+
+
+
+
+
+
+            //ICollection<Element> linkInstance = collector.OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsNotElementType().ToElements();
+            ICollection<Element> linkInstance = collector.OfCategory(BuiltInCategory.OST_RvtLinks).WhereElementIsElementType().ToElements();
+
+            int num = 0;
+
+
+
+            foreach (RevitLinkType rvtlinkType in linkInstance)
+            {
+                rvtlinkType.Reload();
+
+                list.Add(rvtlinkType.Name);
+                num += 1;
+
+            }
+            TaskDialog.Show(doc.Title, string.Join(", ", list));
+
+
+
+
+
+
+
+            //TaskDialog.Show("Revit", collection.Count.ToString());
+            return Autodesk.Revit.UI.Result.Succeeded;
+        }
+    }
+
+
+}
