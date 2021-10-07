@@ -1,0 +1,107 @@
+using System;
+using System.Collections.Generic;
+using Autodesk.Revit.UI;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit;
+using System.Reflection;
+using System.Windows.Media.Imaging;
+
+namespace HelloWorld
+{
+    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+    public class Class1 : IExternalApplication
+    {
+
+        public Result OnStartup(UIControlledApplication application)
+        {
+            // Add a new ribbon panel
+            RibbonPanel ribbonPanel = application.CreateRibbonPanel("BIMV");
+
+            // Create a push button to trigger a command add it to the ribbon panel.
+            string thisAssemblyPath = Assembly.GetExecutingAssembly().Location;
+            PushButtonData buttonData = new PushButtonData("cmdHelloWorld",
+               "MaterialManage", thisAssemblyPath, "HelloWorld.HelloWorld");
+
+            PushButton pushButton = ribbonPanel.AddItem(buttonData) as PushButton;
+
+            // Optionally, other properties may be assigned to the button
+            // a) tool-tip
+            pushButton.ToolTip = "Setting Materials.";
+
+            // b) large bitmap
+            Uri uriImage = new Uri(@"D:\10. 프로그램개발(BIM-V)\REVIT\dog.png");
+            BitmapImage largeImage = new BitmapImage(uriImage);
+            pushButton.LargeImage = largeImage;
+
+            return Result.Succeeded;
+        }
+
+      public Result OnShutdown(UIControlledApplication application)
+      {
+         // nothing to clean up in this simple case
+         return Result.Succeeded;
+      }
+
+
+    }
+
+    [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
+    public class HelloWorld : IExternalCommand
+    {
+        // The main Execute method (inherited from IExternalCommand) must be public
+        public Autodesk.Revit.UI.Result Execute(ExternalCommandData revit,
+       ref string message, ElementSet elements)
+        {
+            Application app = revit.Application.Application;
+            Document doc = revit.Application.ActiveUIDocument.Document;
+
+
+            FilteredElementCollector collector = new FilteredElementCollector(doc);
+            ICollection<Element> collection = collector.OfClass(typeof(Material)).ToElements();
+
+            List<string> list = new List<string>();
+
+
+            //Parameter description;
+            //Parameter mark;
+            Parameter comments;
+
+            using (Transaction transaction = new Transaction(doc))
+            {
+                transaction.Start("Start");
+
+                foreach (Material d in collection)
+                {
+                    comments = d.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS);
+
+                    try
+                    {
+                        if (comments.AsString() != null && comments.AsString().Length > 2 && d.Name != comments.AsString())
+                        {
+
+                            d.Name = comments.AsString();
+                            //list.Add(d.Name);
+                        }
+                    }
+
+                    catch (Autodesk.Revit.Exceptions.ArgumentException)
+                    {
+                        
+                    }
+                    
+                    
+                }
+                transaction.Commit();
+            }
+            //TaskDialog.Show(doc.Title, string.Join(", ", list));
+            //ICollection<Element> collection = collector.OfCategory(BuiltInCategory.OST_RvtLinks).OfClass(typeof(Material)).ToElements();
+
+
+
+            return Autodesk.Revit.UI.Result.Succeeded;
+        }
+    }
+
+
+}
